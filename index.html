@@ -63,73 +63,122 @@
             <p>تعداد آرا برای سارا: <span id="SaraResult">0</span></p>
             <p>تعداد آرا برای رضا: <span id="RezaResult">0</span></p>
         </div>
-        <div>
-            <textarea id="userComment" ></textarea>
-        </div>
+        
+    <h3>لطفا نظر خود را وارد کنید:</h3>
+    <textarea id="userComment" placeholder="نظر خود را اینجا وارد کنید" rows="4" cols="50"></textarea><br>
+    <button onclick="submitComment()">ارسال نظر</button>
+
+    <h3>نظرات ارسال شده:</h3>
+    <div id="commentsSection">
+        <p>هنوز هیچ نظری ارسال نشده است.</p>
     </div>
 
     <script>
+        // تعداد آرا برای هر نفر
         let votes = {
             'Ali': 0,
             'Sara': 0,
             'Reza': 0
         };
 
+        // نظرات ارسال شده
+        let comments = [];
+
+        // بررسی اینکه آیا کاربر قبلاً رای داده است
         if (localStorage.getItem('hasVoted') === 'true') {
+            // اگر رای داده شده باشد، دکمه‌ها غیر فعال می‌شوند
             disableVoting();
         }
 
+        // بارگذاری آرا از localStorage در صورت رای دادن پیشین
+        window.onload = function() {
+            // بارگذاری آرا از localStorage
+            if (localStorage.getItem('Ali')) votes['Ali'] = parseInt(localStorage.getItem('Ali'));
+            if (localStorage.getItem('Sara')) votes['Sara'] = parseInt(localStorage.getItem('Sara'));
+            if (localStorage.getItem('Reza')) votes['Reza'] = parseInt(localStorage.getItem('Reza'));
+            
+            // بروزرسانی تعداد آرا در صفحه
+            document.getElementById('AliVotes').innerText = votes['Ali'];
+            document.getElementById('SaraVotes').innerText = votes['Sara'];
+            document.getElementById('RezaVotes').innerText = votes['Reza'];
+            document.getElementById('AliResult').innerText = votes['Ali'];
+            document.getElementById('SaraResult').innerText = votes['Sara'];
+            document.getElementById('RezaResult').innerText = votes['Reza'];
+
+            // بارگذاری نظرات از localStorage
+            if (localStorage.getItem('comments')) {
+                comments = JSON.parse(localStorage.getItem('comments'));
+                displayComments();
+            }
+        };
+
+        // تابع برای افزایش رای هر نفر
         function vote(candidate) {
+            // بررسی اینکه آیا فرد قبلاً رای داده است یا نه
             if (localStorage.getItem('hasVoted') === 'true') {
                 alert("شما قبلاً رای داده‌اید.");
                 return;
             }
 
-            const comment = document.getElementById("userComment").value.trim();
-            if (!comment) {
-                alert("لطفاً نظر خود را وارد کنید.");
-                return;
-            }
-
+            // افزایش تعداد آرا برای فرد انتخابی
             votes[candidate]++;
-            localStorage.setItem('hasVoted', 'true');
+            
+            // ذخیره‌سازی رای در localStorage
             localStorage.setItem(candidate, votes[candidate]);
-            localStorage.setItem('userComment', comment);
+            localStorage.setItem('hasVoted', 'true');
 
-            document.getElementById(candidate + "Votes").innerText = votes[candidate];
-            document.getElementById(candidate + "Result").innerText = votes[candidate];
+            // بروزرسانی تعداد آرا در صفحه
+            document.getElementById(`${candidate}Votes`).innerText = votes[candidate];
+            document.getElementById(`${candidate}Result`).innerText = votes[candidate];
 
-            alert("رای شما ثبت شد. نظر شما: " + comment);
+            // غیر فعال کردن دکمه‌ها
             disableVoting();
         }
 
+        // غیر فعال کردن دکمه‌ها بعد از رای دادن
         function disableVoting() {
             document.getElementById('voteAli').disabled = true;
             document.getElementById('voteSara').disabled = true;
             document.getElementById('voteReza').disabled = true;
-            document.getElementById('userComment').disabled = true;
+        }
+        
+        // تابع ارسال نظر
+        function submitComment() {
+            let comment = document.getElementById('userComment').value;
+
+            if (comment.trim() === "") {
+                alert("لطفا نظر خود را وارد کنید.");
+                return;
+            }
+
+            // ذخیره نظر در آرایه
+            comments.push(comment);
+
+            // ذخیره نظرات در localStorage
+            localStorage.setItem('comments', JSON.stringify(comments));
+
+            // نمایش نظرات
+            displayComments();
+
+            // پاک کردن فیلد نظر
+            document.getElementById('userComment').value = "";
         }
 
-        window.onload = function() {
-            if (localStorage.getItem('hasVoted') === 'true') {
-                votes['Ali'] = parseInt(localStorage.getItem('Ali') || 0);
-                votes['Sara'] = parseInt(localStorage.getItem('Sara') || 0);
-                votes['Reza'] = parseInt(localStorage.getItem('Reza') || 0);
-                document.getElementById('AliVotes').innerText = votes['Ali'];
-                document.getElementById('SaraVotes').innerText = votes['Sara'];
-                document.getElementById('RezaVotes').innerText = votes['Reza'];
-                document.getElementById('AliResult').innerText = votes['Ali'];
-                document.getElementById('SaraResult').innerText = votes['Sara'];
-                document.getElementById('RezaResult').innerText = votes['Reza'];
+        // نمایش نظرات ذخیره شده
+        function displayComments() {
+            const commentsSection = document.getElementById('commentsSection');
+            commentsSection.innerHTML = "";
 
-                const userComment = localStorage.getItem('userComment');
-                if (userComment) {
-                    document.getElementById('userComment').value = userComment;
-                }
-
-                disableVoting();
+            if (comments.length > 0) {
+                comments.forEach(function(comment, index) {
+                    let p = document.createElement('p');
+                    p.textContent = `${index + 1}. ${comment}`;
+                    commentsSection.appendChild(p);
+                });
+            } else {
+                commentsSection.innerHTML = "<p>هنوز هیچ نظری ارسال نشده است.</p>";
             }
-        };
+        }
     </script>
 </body>
 </html>

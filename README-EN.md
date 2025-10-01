@@ -1,3 +1,4 @@
+.
 # Voting System
 
 This is a simple HTML, CSS, and JavaScript project that allows users to vote for one of three people (Ali, Sara, or Reza) and leave a comment. Each user can vote only once, and their vote and comment are stored in the browser's `localStorage`.
